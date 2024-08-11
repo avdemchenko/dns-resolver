@@ -18,6 +18,16 @@ export const AAAA_RECORD_TYPE = 28
 export const NS_RECORD_TYPE = 2
 const DOMAIN_TO_RESOLVE = 'www.google.com'
 
+/**
+ * Sends a DNS query to a specified DNS server and processes the response.
+ *
+ * This function creates a UDP client socket, constructs a DNS query for the specified domain,
+ * and sends it to the given DNS server. Upon receiving a response, the message is parsed,
+ * and the DNS response is processed to determine the IP address or next DNS server to query.
+ *
+ * @param {string} domain - The domain name to resolve (e.g., "www.google.com").
+ * @param {string} server - The IP address of the DNS server to send the query to.
+ */
 function queryDNS(domain: string, server: string) {
   const ipVersion = net.isIP(server)
 
@@ -54,6 +64,16 @@ function queryDNS(domain: string, server: string) {
   })
 }
 
+/**
+ * Processes the DNS response to extract relevant DNS records.
+ *
+ * This function processes the DNS response, first checking for NS (Name Server) records
+ * in the authority section. If an NS record is found, it attempts to find the corresponding
+ * IP address in the additional section and sends a new DNS query to that IP address. If no
+ * NS records are found, it extracts the IP address from the answer section and logs it.
+ *
+ * @param {object} response - The parsed DNS response object from `parseResponse`.
+ */
 function processDNSResponse(response: ReturnType<typeof parseResponse>) {
   const nsRecords = response.authorityRecords.filter(
     (rec) => rec.type === NS_RECORD_TYPE
@@ -74,4 +94,5 @@ function processDNSResponse(response: ReturnType<typeof parseResponse>) {
   }
 }
 
+// Start the DNS resolution process by querying the root DNS server.
 queryDNS(DOMAIN_TO_RESOLVE, ROOT_DNS_SERVER)
